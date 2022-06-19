@@ -13,51 +13,50 @@ public class Main {
     }
 
     public static HtmlPage getPage(String url) {
-        try (WebClient webClient = new WebClient()) {
-            webClient.getOptions().setCssEnabled(false);
-            webClient.getOptions().setJavaScriptEnabled(false);
-            return webClient.getPage(url);
+        try (WebClient webClient = new WebClient()) { //Opens the web client only during this try catch block
+            webClient.getOptions().setCssEnabled(false); //Disables CSS
+            webClient.getOptions().setJavaScriptEnabled(false); //Disables JavaScript
+            return webClient.getPage(url); //Returns the page at the url
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Error getting page");
-        return null;
+        System.out.println("Error getting page"); //If the page isn't available for whatever reason, this will be printed
+        return null; //And the method will return null
     }
 
     public static void loopThroughPokemon() {
-        HtmlPage page = getPage("https://pokemondb.net/pokedex/all");
+        HtmlPage page = getPage("https://pokemondb.net/pokedex/all"); //Saves the page to be scraped as a variable
 
-        List<HtmlElement> pokemonList = page.getByXPath("//table/tbody/tr/td/a");
-        for (int i = 0; i < pokemonList.size(); i++) {
-            if (!pokemonList.get(i).getAttribute("title").contains("View Pokedex")) {
+        List<HtmlElement> pokemonList = page.getByXPath("//table/tbody/tr/td/a"); //Gets all the rows with Pokémon data from the page
+        for (int i = 0; i < pokemonList.size(); i++) {  //Loops through all the rows
+            if (!pokemonList.get(i).getAttribute("title").contains("View Pokedex")) { //And removes all unnecessary entries
                 pokemonList.remove(i);
                 i--;
             }
         }
 
-        int count = 0;
-        for (int i=0; i<pokemonList.size(); i++) {
-            //Fix isn't good, but prevents the IndexOutOfBoundsException
-            if (i == pokemonList.size() - 1) {
-                count++; // increment the count
-                extractPokemon(pokemonList.get(i).getAttribute("href")); //Extract the data
+        int count = 0; //Counts the number of Pokémon
+        for (int i=0; i<pokemonList.size(); i++) { //Loops through all the rows
+            if (i == pokemonList.size() - 1) { //Prevents the last Pokémon from being skipped due to an IndexOutOfBoundsException
+                count++; //Increments the count
+                extractPokemon(pokemonList.get(i).getAttribute("href")); //Extracts the data from the scraped Pokémon
             }
-            else if (!pokemonList.get(i).getAttribute("href").equals(pokemonList.get(i + 1).getAttribute("href"))) {
-                    count++; // increment the count
-                    extractPokemon(pokemonList.get(i).getAttribute("href")); //Extract the data
+            else if (!pokemonList.get(i).getAttribute("href").equals(pokemonList.get(i + 1).getAttribute("href"))) { //If the next Pokémon is a different Pokémon than the current
+                    count++; //Increments the count
+                    extractPokemon(pokemonList.get(i).getAttribute("href")); //Extracts the data from the scraped Pokémon
             }
         }
-        System.out.println("Total: " + count); //Count is correct, theoretically redundant
+        System.out.println("Total: " + count); //As a control measure, the number of scraped Pokémon is printed
     }
 
     public static void extractPokemon(String url) {
         String baseUrl = "https://pokemondb.net";
-        HtmlPage page = getPage(baseUrl+url);
-        HtmlElement element = page.getFirstByXPath("//h1");
-        String name = element.asText();
-        element = page.getFirstByXPath("//tr/td/strong");
-        String num = element.asText();
+        HtmlPage page = getPage(baseUrl+url); //Fetches the page for the Pokémon by combining the base and the individual part of the URL
+        HtmlElement element = page.getFirstByXPath("//h1"); //Gets the Pokémon's name
+        String name = element.asText(); //And saves it
+        element = page.getFirstByXPath("//tr/td/strong"); //Gets the Pokémon's National Dex number
+        String num = element.asText(); //And saves it
 
-        System.out.println("#"+num + ": " + name);
+        System.out.println("#"+num + ": " + name); //Outputs the scraped data for validation purposes
     }
 }
