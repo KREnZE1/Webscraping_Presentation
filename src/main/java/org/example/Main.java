@@ -52,6 +52,7 @@ public class Main {
     public static void extractPokemon(String url) {
         String baseUrl = "https://pokemondb.net";
         HtmlPage page = getPage(baseUrl+url); //Fetches the page for the Pokémon by combining the base and the individual part of the URL
+
         HtmlElement element = page.getFirstByXPath("//h1"); //Gets the Pokémon's name
         String name = element.asText(); //And saves it
         element = page.getFirstByXPath("//tr/td/strong"); //Gets the Pokémon's National Dex number
